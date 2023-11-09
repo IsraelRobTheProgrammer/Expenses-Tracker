@@ -4,18 +4,19 @@ const emailFeedbackArea = document.querySelector(".email_invalid_feedback");
 const emailField = document.querySelector("#emailField");
 const passwordField = document.querySelector("#passwordField");
 
+const submitBtn = document.querySelector("#submitBtn");
 const showPswdToggle = document.querySelector(".show-password-toggle");
 
 const userSuccess = document.querySelector(".user-success");
 
 const handleToggle = (e) => {
   if (showPswdToggle.textContent === "Show") {
-    console.log("in if");
+    // console.log("in if");
 
     showPswdToggle.textContent = "Hide";
     passwordField.setAttribute("type", "text");
   } else {
-    console.log("in else");
+    // console.log("in else");
 
     showPswdToggle.textContent = "Show";
     passwordField.setAttribute("type", "password");
@@ -25,7 +26,7 @@ const handleToggle = (e) => {
 showPswdToggle.addEventListener("click", handleToggle);
 
 emailField.addEventListener("keyup", (e) => {
-  console.log("11111");
+  // console.log("11111");
   const emailVal = e.target.value;
 
   if (emailVal.length > 0) {
@@ -36,12 +37,14 @@ emailField.addEventListener("keyup", (e) => {
       .then((res) => res.json())
       .then((data) => {
         if (data.email_err) {
-          console.log(data.email_err);
-          emailField.classList.add("is-invalid");
+          // submitBtn.setAttribute("disabled", "disabled");
+          submitBtn.disabled = true;
 
+          emailField.classList.add("is-invalid");
           emailFeedbackArea.style.display = "block";
           emailFeedbackArea.innerHTML = `<p>${data.email_err}</p>`;
         } else {
+          submitBtn.removeAttribute("disabled");
           emailFeedbackArea.style.display = "none";
         }
       });
@@ -64,18 +67,20 @@ usernameField.addEventListener("keyup", (e) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("data", data);
+        // console.log("data", data);
         if (data.user_err) {
           console.log(data.user_err);
           userSuccess.style.display = "none";
           usernameField.classList.add("is-invalid");
 
+          // submitBtn.setAttribute("disabled", "disabled");
+          submitBtn.disabled = true;
           feedBackArea.style.display = "block";
           feedBackArea.innerHTML = `<p>${data.user_err}</p>`;
         } else {
-          if (!data.user_err) {
-            usernameField.classList.remove("is-invalid");
-          }
+          usernameField.classList.remove("is-invalid");
+          submitBtn.removeAttribute("disabled");
+
           // feedbackArea.style.display = "none";
         }
       });

@@ -15,10 +15,16 @@
                     <h4> Register for a free account </h4>
                 </div>
 
-                <form action="" method="post">
+
+                <form action="{% url 'register' %}" method="post">
+
+                    {% csrf_token %}
+
+                    {% include  'partials/_messages.html'%}
+
                     <div class="form-group">
                         <input type="text" name="username" id="usernameField" placeholder="username"
-                            class="form-control form-control-sm">
+                            class="form-control form-control-sm" value="{{fieldValues.username}}">
                     </div>
 
                     <div class="invalid_feedback invalid-feedback" style="display:none">
@@ -27,8 +33,8 @@
 
 
                     <div class="form-group">
-                        <input type="email" name="email" id="emailField" placeholder="email"
-                            class="form-control form-control-sm">
+                        <input type="email" name="email" id="emailField" placeholder="email" 
+                            class="form-control form-control-sm" value="{{fieldValues.email}}">
                     </div>
                     <div class="email_invalid_feedback invalid-feedback" style="display:none"></div>
 
@@ -40,7 +46,7 @@
                     </div>
 
 
-                    <input type="submit" value="Register" class="btn btn-block btn-primary p-3 " />
+                    <input type="submit" value="Register" class="btn btn-block btn-primary p-3" id="submitBtn" />
                 </form>
             </div>
 
