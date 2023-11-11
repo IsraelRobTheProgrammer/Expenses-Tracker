@@ -137,3 +137,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MESSAGE_TAGS = {messages.ERROR: "danger"}
+
+
+# email settings
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER")
+EMAIL_PORT = 587
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")

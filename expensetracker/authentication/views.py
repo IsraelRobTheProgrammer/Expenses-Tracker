@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -6,6 +6,17 @@ import json
 from validate_email import validate_email
 
 from django.contrib import messages
+
+from django.core.mail import EmailMessage
+from django.contrib import auth
+
+from django.urls import reverse
+
+from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.sites.shortcuts import get_current_site
+
+from .utils import token_generator
 
 # Create your views here.
 
@@ -68,7 +79,7 @@ class Register_View(View):
         password = request.POST["password"]
 
         context = {"fieldValues": request.POST}
-        
+
         if not User.objects.filter(username=username).exists():
             if not User.objects.filter(email=email).exists():
                 if len(password) < 6:
@@ -77,9 +88,84 @@ class Register_View(View):
                     return render(request, "auth/register.html", context)
                 user = User.objects.create(username=username, email=email)
                 user.set_password(password)
+                user.is_active = False
+
                 user.save()
+
+                # path_to_view
+                # - get current domain
+                # - join the current relative url to verification view
+                #  - encode the uid
+                #  - token
+                uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+
+                domain = get_current_site(request).domain
+                link = reverse(
+                    "activate",
+                    kwargs={
+                        "uidb64": uidb64,
+                        "token": token_generator.make_token(user),
+                    },
+                )
+                print(domain, "domain")
+                print(link, "link")
+                activate_url = "http://" + domain + link
+
+                email_body = (
+                    "Hi "
+                    + user.username
+                    + " Please use this link to verify your account\n"
+                    + activate_url
+                )
+                email = EmailMessage(
+                    "Activate Your Account",  # email_subject
+                    email_body,
+                    "noreply@gmail.com",
+                    [user.email],
+                )
+                email.send(fail_silently=False)
                 messages.success(request, "Account Created Successfully")
                 return render(request, "auth/register.html")
 
 
 reg_view = Register_View.as_view()
+
+
+class Verification_View(View):
+    def get(self, request, uidb64, token):
+        try:
+            id = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=id)
+
+            print(id, "id")
+            print(user, "user")
+
+            if not token_generator.check_token(user, token):
+                print("checking token")
+                return redirect("login" + "?message=" + "user already activated")
+
+            if user.is_active:
+                print("checking active user")
+                return redirect("login")
+
+            print("b4 active")
+            user.is_active = True
+            user.save()
+
+            messages.success(request, "Account Activated Successfully!")
+            return redirect("login")
+        except Exception as e:
+            print(e)
+            print("An Error Occured")
+        return redirect("login")
+
+
+verification_view = Verification_View.as_view()
+
+
+class LoginView(View):
+    def get(self, request):
+        return render(request, "auth/login.html")
+
+
+login_view = LoginView.as_view()
