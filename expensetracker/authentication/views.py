@@ -167,5 +167,49 @@ class LoginView(View):
     def get(self, request):
         return render(request, "auth/login.html")
 
+    def post(self, request):
+        username = request.POST["username"]
+        password = request.POST["password"]
+
+        if username and password:
+            user = auth.authenticate(username=username, password=password)
+
+            if user:
+                print(user.get_username(), "username")
+                if user.is_active:
+                    auth.login(request, user)
+                    messages.success(
+                        request,
+                        "Welcome, " + user.get_username() + " you are now logged in",
+                    )
+                    return redirect("expenses_homepage")
+                messages.error(
+                    request,
+                    "Account not active please check your email for a verification link",
+                )
+                return render(request, "auth/login.html")
+
+            messages.error(
+                request,
+                "Invalid Credentials, try again",
+            )
+            return render(request, "auth/login.html")
+
+        messages.error(
+            request,
+            "Please Enter All Fields",
+        )
+        return render(request, "auth/login.html")
+
 
 login_view = LoginView.as_view()
+
+
+class LogOutView(View):
+    def post(self, request):
+        auth.logout(request)
+        messages.success(request, "LogOut Successfully")
+        return redirect("login")
+
+
+log_out_view = LogOutView.as_view()

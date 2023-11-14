@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "expenses.apps.ExpensesConfig",
     "authentication.apps.AuthenticationConfig",
+    "userpreferences.apps.UserpreferencesConfig"
 ]
 
 MIDDLEWARE = [

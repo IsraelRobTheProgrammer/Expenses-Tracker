@@ -1,12 +1,59 @@
-{% extends "base_auth.html" %}
+{% extends 'base_auth.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
 
-{%block content%}
-    <div class="card">
+    <div class="col-md-3"></div>
+
+    <div class="col-md-6">
+
+        <div class="card mt-5">
+
+            <div class="card-body">
+
+                <div class="card-title py-3">
+                    <h4> Login to you account </h4>
+                </div> 
 
 
-        <div class="card-body">
+                <form action="{% url 'login' %}" method="post">
 
-            <h1>Login</h1>
+                    {% csrf_token %}
+
+                    {% include  'partials/_messages.html'%}
+
+                    <div class="form-group">
+                        <input type="text" name="username" id="usernameField" placeholder="username"
+                            class="form-control form-control-sm" value="{{fieldValues.username}}">
+                    </div>
+                        <p class="text-sm text-success user-success"></p>
+
+                    {% comment %} <div class="form-group">
+                        <input type="email" name="email" id="emailField" placeholder="email" 
+                            class="form-control form-control-sm" value="{{fieldValues.email}}">
+                    </div>
+                    <div class="email_invalid_feedback invalid-feedback" style="display:none"></div> {% endcomment %}
+
+
+                    <div class="form-group">
+                        <input type="password" name="password" id="passwordField" placeholder="password"
+                            class="form-control form-control-sm">
+
+                    </div>
+
+
+                    <input type="submit" value="Login" class="btn btn-block btn-primary p-3" id="submitBtn" />
+                </form>
+            </div>
+
         </div>
+
     </div>
-{%endblock content%}
+    <div class="col-md-3"></div>
+
+</div>
+
+<script src={% static 'js/reg.js' %}> </script>
+
+
+{% endblock content %}
