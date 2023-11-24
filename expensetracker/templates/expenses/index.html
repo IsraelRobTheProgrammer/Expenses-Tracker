@@ -1,21 +1,56 @@
 {% extends "base.html" %} {%block content %}
 
-<div class="container">
-  {% include 'partials/_messages.html'%}
-  <div class="col-md-9">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="">Expenses</a></li>
-        <li class="breadcrumb-item active" aria-current="page">My Expenses</li>
-      </ol>
-    </nav>
-  </div>
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-10">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="">Expenses</a></li>
+          <li class="breadcrumb-item active" aria-current="page">
+            My Expenses
+          </li>
+        </ol>
+      </nav>
+    </div>
 
-  <div class="col-md-2">
-    <a href="{% url 'add_expenses' %}"></a>
+    <div class="col-md-2">
+      <a href="{% url 'add_expenses' %}" class="btn btn-primary">
+        Add Expense</a
+      >
+    </div>
   </div>
 </div>
 
+<div class="container">
+  {% include 'partials/_messages.html'%} 
+  {% if expenses.count %}
+  
+  <table class="table table-stripped table-hover">
+    <thead>
+      <tr>
+        <th>Amount (Currency)</th>
+        <th>Category</th>
+        <th>Description</th>
+        <th>Date</th>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
 
+    <tbody>
+      {% for expense in expenses %}
+        <tr>
+          <td>{{expense.amount}}</td>
+          <td>{{expense.category}}</td>
+          <td>{{expense.desc}}</td>
+          <td>{{expense.date}}</td>
+          <td><a href="{% url "edit_expenses" expense.id %}" class="btn btn-secondary btn-sm">Edit</a></td>
+          <td><a href="{% url "delete_expenses" expense.id %}" class="btn btn-danger btn-sm">Delete</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
 
 {%endblock content%}

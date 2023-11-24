@@ -5,13 +5,13 @@
       <li class="breadcrumb-item">
         <a href="{% url 'expenses_homepage' %}">Expenses</a>
       </li>
-      <li class="breadcrumb-item active" aria-current="page">Add Expenses</li>
+      <li class="breadcrumb-item active" aria-current="page">Edit Expense</li>
     </ol>
   </nav>
 
   <div class="card">
     <div class="card-body">
-      <form action="{% url 'add_expenses' %}" method="post">
+      <form action="{% url 'edit_expenses' expense.id %}" method="post">
         {% csrf_token %} {% include "partials/_messages.html" %}
         <div class="form-group">
           <label for="">Amount</label>
@@ -24,7 +24,7 @@
           />
         </div>
 
-        <div>
+        <div class="form-group">
           <label for="">Description</label>
           {% comment %} value="{{fieldValues.amount}}" {% endcomment %}
           <input
@@ -35,14 +35,19 @@
           />
         </div>
 
-        <div>
+        <div class="form-group">
           <label for="">Category</label>
           <select
             class="form-control form-control-sm"
             style="cursor: pointer"
             name="category"
           >
+            {% comment %}
             <option selected>Choose Your Expense</option>
+            {% endcomment %}
+            <option selected name="category" value="{{fieldValues.category}}">
+              {{fieldValues.category}}
+            </option>
             {% for category in categories %}
             <option name="category" value="{{category.name}}">
               {{category.name}}
@@ -52,15 +57,16 @@
           </select>
         </div>
 
-        <div>
+        <div class="form-group">
           <label for="">Date Of Expense</label>
           <input
             type="date"
             class="form-control form-control-sm"
             name="expense_date"
+            value="{{fieldValues.date}}"
           />
         </div>
-        <input type="submit" value="Submit" class="btn btn-primary" />
+        <input type="submit" value="Edit" class="btn btn-primary" />
       </form>
     </div>
   </div>
