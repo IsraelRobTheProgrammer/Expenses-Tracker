@@ -3,8 +3,32 @@ from django.contrib.auth.decorators import login_required
 from .models import Category, Expenses
 from django.contrib import messages
 from django.core.paginator import Paginator
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
+
+
+@csrf_exempt
+def search_expenses(request):
+    if request.method == "POST":
+        print("in post method")
+        search_str = json.loads(request.body).get("searchText")
+
+        expenses = (
+            Expenses.objects.filter(amount__startswith=search_str, owner=request.user)
+            | Expenses.objects.filter(date__startswith=search_str, owner=request.user)
+            | Expenses.objects.filter(desc__icontains=search_str, owner=request.user)
+            | Expenses.objects.filter(
+                category__icontains=search_str, owner=request.user
+            )
+        )
+
+        data = expenses.values()
+
+        return JsonResponse(list(data), safe=False)
+    return redirect("expenses_homepage")
 
 
 @login_required(login_url="/auth/login")
@@ -13,10 +37,8 @@ def index(request):
     expenses = Expenses.objects.filter(owner=request.user)
 
     paginator = Paginator(expenses, 1)
-    print()
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    print()
 
     context = {"expenses": expenses, "page_obj": page_obj}
     return render(request, "expenses/index.html", context)
