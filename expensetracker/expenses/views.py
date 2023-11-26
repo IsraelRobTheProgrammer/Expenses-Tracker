@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from userpreferences.models import UserPreference
 
 # Create your views here.
 
@@ -40,7 +41,14 @@ def index(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    context = {"expenses": expenses, "page_obj": page_obj}
+    currency = UserPreference.objects.get(user=request.user).currency
+    # print(currency, "user")
+
+    context = {
+        "expenses": expenses,
+        "page_obj": page_obj,
+        "currency": currency,
+    }
     return render(request, "expenses/index.html", context)
 
 

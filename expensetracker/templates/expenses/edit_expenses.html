@@ -63,7 +63,7 @@
             type="date"
             class="form-control form-control-sm"
             name="expense_date"
-            value="{{fieldValues.date}}"
+            value="{{fieldValues.date |date:'Y-m-d'}}"
           />
         </div>
         <input type="submit" value="Edit" class="btn btn-primary" />

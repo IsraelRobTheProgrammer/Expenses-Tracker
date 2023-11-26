@@ -15,7 +15,6 @@ searchField.addEventListener("keyup", (e) => {
 
   if (searchValue.trim().length > 0) {
     paginationContainer.style.display = "none";
-    Tbody.innerHTML = "";
     fetch("/search_expenses", {
       body: JSON.stringify({ searchText: searchValue }),
       method: "POST",
@@ -34,6 +33,7 @@ searchField.addEventListener("keyup", (e) => {
             NoRes.style.display = "none";
             tableOutputTrue.style.display = "block";
 
+            Tbody.innerHTML = "";
             data.forEach((item) => {
               Tbody.innerHTML += `
                     <tr>
