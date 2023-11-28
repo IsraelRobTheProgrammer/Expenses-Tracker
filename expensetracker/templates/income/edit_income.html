@@ -1,0 +1,77 @@
+{% extends "base.html" %} {%block content%}
+<div class="container mt-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{% url 'income_homepage' %}">Income</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">Edit Income</li>
+    </ol>
+  </nav>
+
+  <div class="card">
+    <div class="card-body">
+      <form action="{% url 'edit_income' income.id %}" method="post">
+        {% csrf_token %} {% include "partials/_messages.html" %}
+        <div class="form-group">
+          <label for="">Amount</label>
+          <input
+            type="number"
+            class="form-control form-control-sm"
+            name="amount"
+            min="1"
+            value="{{fieldValues.amount}}"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="">Description</label>
+          {% comment %} value="{{fieldValues.amount}}" {% endcomment %}
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            name="desc"
+            value="{{fieldValues.desc}}"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="">Source</label>
+          <select
+            class="form-control form-control-sm"
+            style="cursor: pointer"
+            name="source"
+          >
+            {% comment %}
+            <option selected>Choose Your Income</option>
+            {% endcomment %}
+            <option selected name="source" value="{{fieldValues.source}}">
+              {{fieldValues.source}}
+            </option>
+            {% for source in sources %}
+            <option name="source" value="{{source.name}}">
+              {{source.name}}
+            </option>
+
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="">Date Of Income</label>
+          <input
+            type="date"
+            class="form-control form-control-sm"
+            name="income_date"
+            value="{{fieldValues.date |date:'Y-m-d'}}"
+          />
+        </div>
+        <input type="submit" value="Edit" class="btn btn-primary" />
+      </form>
+    </div>
+  </div>
+</div>
+
+{% comment %}
+<h1>Add Income</h1>
+{% endcomment %} {%endblock content%}
