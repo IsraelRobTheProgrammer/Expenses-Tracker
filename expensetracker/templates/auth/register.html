@@ -48,7 +48,21 @@
 
                     <input type="submit" value="Register" class="btn btn-block btn-primary p-3" id="submitBtn" />
                 </form>
+                <div class="d-flex flex-row justify-content-between">
+                    <div>
+    
+                        <span>Have An Account?</span>
+                        <a href={% url "login" %}> Login </a>
+                    </div>
+    
+                    <div>
+    
+                        <span>Forgot Password?</span>
+                        <a href={% url "request_reset_pswd" %}> Reset Password </a>
             </div>
+
+            </div>
+  
 
         </div>
 

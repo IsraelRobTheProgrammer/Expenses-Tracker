@@ -12,40 +12,47 @@
             <div class="card-body">
 
                 <div class="card-title py-3">
-                    <h4> Login to you account </h4>
-                </div> 
+                    <h4> Login to your account </h4>
+                </div>
 
 
                 <form action="{% url 'login' %}" method="post">
 
                     {% csrf_token %}
 
-                    {% include  'partials/_messages.html'%}
+                    {% include 'partials/_messages.html'%}
 
                     <div class="form-group">
                         <input type="text" name="username" id="usernameField" placeholder="username"
                             class="form-control form-control-sm" value="{{fieldValues.username}}">
                     </div>
-                        <p class="text-sm text-success user-success"></p>
-
-                    {% comment %} <div class="form-group">
-                        <input type="email" name="email" id="emailField" placeholder="email" 
-                            class="form-control form-control-sm" value="{{fieldValues.email}}">
-                    </div>
-                    <div class="email_invalid_feedback invalid-feedback" style="display:none"></div> {% endcomment %}
-
+                    <p class="text-sm text-success user-success"></p>
 
                     <div class="form-group">
                         <input type="password" name="password" id="passwordField" placeholder="password"
                             class="form-control form-control-sm">
 
+                        <small class="py-5 show-password-toggle">Show</small>
                     </div>
+
 
 
                     <input type="submit" value="Login" class="btn btn-block btn-primary p-3" id="submitBtn" />
                 </form>
+                <div class="d-flex flex-row justify-content-between">
+                    <div>
+    
+                        <span>Don't Have An Account?</span>
+                        <a href={% url "register" %}> Register </a>
+                    </div>
+    
+                    <div>
+    
+                        <span>Forgot Password?</span>
+                        <a href={% url "request_reset_pswd" %}> Reset Password </a>
             </div>
 
+            </div>
         </div>
 
     </div>

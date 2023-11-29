@@ -12,11 +12,14 @@ from django.contrib import auth
 
 from django.urls import reverse
 
-from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
+from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.sites.shortcuts import get_current_site
 
 from .utils import token_generator
+
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+
 
 # Create your views here.
 
@@ -24,7 +27,6 @@ from .utils import token_generator
 class User_Validation_View(View):
     def post(self, request):
         data = json.loads(request.body)
-        # print(data)
         username = data["username"]
 
         if not str(username).isalnum():
@@ -48,7 +50,6 @@ user_val_view = User_Validation_View.as_view()
 class Email_Validation_View(View):
     def post(self, request):
         data = json.loads(request.body)
-        # print(data)
         email = data["email"]
 
         if not validate_email(email):
@@ -107,8 +108,7 @@ class Register_View(View):
                         "token": token_generator.make_token(user),
                     },
                 )
-                print(domain, "domain")
-                print(link, "link")
+
                 activate_url = "http://" + domain + link
 
                 email_body = (
@@ -131,40 +131,34 @@ class Register_View(View):
 reg_view = Register_View.as_view()
 
 
-class Verification_View(View):
+class Activation_View(View):
     def get(self, request, uidb64, token):
         try:
             id = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=id)
 
-            print(id, "id")
-            print(user, "user")
-
             if not token_generator.check_token(user, token):
-                print("checking token")
                 return redirect("login" + "?message=" + "user already activated")
 
             if user.is_active:
-                print("checking active user")
                 return redirect("login")
 
-            print("b4 active")
             user.is_active = True
             user.save()
 
             messages.success(request, "Account Activated Successfully!")
             return redirect("login")
         except Exception as e:
-            print(e)
-            print("An Error Occured")
+            messages.info(request, "Something Went Wrong")
         return redirect("login")
 
 
-verification_view = Verification_View.as_view()
+activation_view = Activation_View.as_view()
 
 
 class LoginView(View):
     def get(self, request):
+        print(request.body, "request")
         return render(request, "auth/login.html")
 
     def post(self, request):
@@ -175,7 +169,6 @@ class LoginView(View):
             user = auth.authenticate(username=username, password=password)
 
             if user:
-                print(user.get_username(), "username")
                 if user.is_active:
                     auth.login(request, user)
                     messages.success(
@@ -213,3 +206,118 @@ class LogOutView(View):
 
 
 log_out_view = LogOutView.as_view()
+
+
+class RequestResetPswdView(View):
+    def get(self, request):
+        return render(request, "auth/forgot_password.html")
+
+    def post(self, request):
+        email = request.POST["email"]
+        context = {"email": email, "emailValue": email}
+        print(validate_email(email))
+        if not validate_email(email):
+            messages.error(request, "Invalid Email")
+            return render(request, "auth/forgot_password.html", context)
+
+        # path_to_view
+        # - get current domain
+        # - join the current relative url to verification view
+        #  - encode the uid
+        #  - token
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(username=request.user)
+            print(user)
+            if user:
+                try:
+                    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+                    domain = get_current_site(request).domain
+                    link = reverse(
+                        "reset",
+                        kwargs={
+                            "uidb64": uidb64,
+                            "token": PasswordResetTokenGenerator().make_token(user),
+                        },
+                    )
+
+                    reset_url = "http://" + domain + link
+                    email_body = (
+                        "Hi "
+                        + user.username
+                        + " Please use this link to reset your account password\n"
+                        + reset_url
+                    )
+                    email = EmailMessage(
+                        "Password Reset",  # email_subject
+                        email_body,
+                        "noreply@gmail.com",
+                        [user.email],
+                    )
+                    email.send(fail_silently=False)
+                    messages.success(request, "Reset Email Sent")
+                except Exception as e:
+                    messages.error(request, "Something Went Wrong, Please Try Again")
+                    print(e)
+                    return render(request, "auth/forgot_password.html", context)
+
+        else:
+            messages.error(request, "Email does not exist")
+            return render(request, "auth/forgot_password.html")
+
+        return render(request, "auth/forgot_password.html")
+
+
+request_reset = RequestResetPswdView.as_view()
+
+
+class ResetPswdView(View):
+    def get(self, request, uidb64, token):
+        context = {"uidb64": uidb64, "token": token}
+
+        try:
+            id = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=id)
+            # print(PasswordResetTokenGenerator().check_token(user, token), "PSWD")
+
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                messages.info(
+                    request, "Reset link has expired, please request a new one"
+                )
+                return render(request, "auth/forgot_password.html")
+        except Exception as e:
+            messages.info(request, "Reset link is invalid, please request a new one")
+            print("Error:", e)
+            return render(request, "auth/forgot_password.html")
+
+        return render(request, "auth/reset_password.html", context)
+
+    def post(self, request, uidb64, token):
+        context = {"uidb64": uidb64, "token": token}
+
+        password = request.POST["password"]
+        password2 = request.POST["password2"]
+
+        if password != password2:
+            messages.error(request, "Passwords do not match")
+            return render(request, "auth/reset_password.html", context)
+
+        if len(password) < 6:
+            messages.error(request, "Passwords too short")
+            return render(request, "auth/reset_password.html", context)
+
+        try:
+            id = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=id)
+
+            user.set_password(password)
+            user.save()
+
+            messages.success(request, "Password reset successfull, Please Login")
+            return redirect("login")
+        except Exception as e:
+            messages.info(request, "Something went wrong, Try Again")
+            print(e)
+            return render(request, "auth/reset_password.html", context)
+
+
+reset_password = ResetPswdView.as_view()
