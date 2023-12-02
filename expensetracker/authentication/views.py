@@ -1,3 +1,5 @@
+from collections.abc import Callable, Iterable, Mapping
+from typing import Any
 from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib.auth.models import User
@@ -19,6 +21,16 @@ from django.contrib.sites.shortcuts import get_current_site
 from .utils import token_generator
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+import threading
+
+
+class EmailThread(threading.Thread):
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self) -> None:
+        self.email.send(fail_silently=False)
 
 
 # Create your views here.
@@ -123,8 +135,8 @@ class Register_View(View):
                     "noreply@gmail.com",
                     [user.email],
                 )
-                email.send(fail_silently=False)
-                messages.success(request, "Account Created Successfully")
+                EmailThread(email).start()
+                messages.success(request, "Please check your email to activate your account")
                 return render(request, "auth/register.html")
 
 
@@ -146,9 +158,10 @@ class Activation_View(View):
             user.is_active = True
             user.save()
 
-            messages.success(request, "Account Activated Successfully!")
+            messages.success(request, "Account Activated Successfully, Please Login!")
             return redirect("login")
         except Exception as e:
+            print("error", e)
             messages.info(request, "Something Went Wrong")
         return redirect("login")
 
@@ -253,7 +266,7 @@ class RequestResetPswdView(View):
                         "noreply@gmail.com",
                         [user.email],
                     )
-                    email.send(fail_silently=False)
+                    EmailThread(email).start()
                     messages.success(request, "Reset Email Sent")
                 except Exception as e:
                     messages.error(request, "Something Went Wrong, Please Try Again")
