@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from userpreferences.models import UserPreference
 import datetime
 import csv
+import xlwt
 
 # Create your views here.
 
@@ -167,8 +168,8 @@ def stats_view(request):
 def export_csv(request):
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = (
-        "attachment; filename=Expenses" + str(datetime.datetime.now()) + "csv"
-    )
+        "attachment; filename=Expenses" + str(datetime.datetime.now()) + ".csv"
+    )  # filename and extension
 
     writer = csv.writer(response)
     writer.writerow(
@@ -179,5 +180,51 @@ def export_csv(request):
 
     for exp in expenses:
         writer.writerow([exp.amount, exp.desc, exp.category, exp.date])
+
+    return response
+
+
+def export_excel(request):
+    response = HttpResponse(content_type="application/ms-excel")
+    response["Content-Disposition"] = (
+        "attachment; filename=Expenses" + str(datetime.datetime.now()) + ".xls"
+    )
+
+    wb = xlwt.Workbook(encoding="utf-8")
+    ws = wb.add_sheet("Expenses")
+
+    row_num = 0  # to access the row, starts from first
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+
+    columns = ["Amount", "Description", "Category", "Date"]
+
+    for col_num in range(len(columns)):
+        ws.write(
+            row_num,
+            col_num,
+            columns[col_num],  # accessing each column values
+            font_style,
+        )
+    font_style = xlwt.XFStyle()
+
+    rows = Expenses.objects.filter(owner=request.user).values_list(
+        "amount", "desc", "category", "date"
+    )
+    for row in rows:
+        print(row)
+        row_num += 1 # added 1 to start from next row
+        print("in row")
+
+        for col_num in range(len(row)):
+            print(row[col_num])
+            print("in col", col_num)
+            ws.write(
+                row_num,
+                col_num,
+                str(row[col_num]), # accessing each row values
+                font_style,
+            )
+    wb.save(response)
 
     return response
