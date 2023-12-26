@@ -7,6 +7,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from userpreferences.models import UserPreference
+import datetime
 
 # Create your views here.
 
@@ -118,9 +119,6 @@ def edit_expenses(request, id):
         messages.success(request, "Expense edited successfully")
         return redirect("expenses_homepage")
 
-        # messages.info(request, "HANDLING POST FORM")
-        # return render(request, "expenses/edit_expenses.html", context)
-
     return render(request, "expenses/edit_expenses.html", context)
 
 
@@ -129,3 +127,36 @@ def delete_expenses(request, id):
     expense.delete()
     messages.success(request, "Expense deleted succesfully")
     return redirect("expenses_homepage")
+
+
+def expenses_category_summary(request):
+    today = datetime.datetime.today()
+    six_months = today - datetime.timedelta(days=30 * 6)
+    expenses = Expenses.objects.filter(
+        owner=request.user, date__gte=six_months, date__lte=today
+    )
+
+    final_rep = {}
+
+    def get_category(expense):
+        return expense.category
+
+    category_list = list(set(map(get_category, expenses)))
+
+    def get_expense_category_amount(category):
+        amount = 0
+        filtered_by_category = expenses.filter(category=category)
+
+        for item in filtered_by_category:
+            amount += item.amount
+
+        return amount
+
+    for expense in expenses:
+        for category in category_list:
+            final_rep[category] = get_expense_category_amount(category)
+
+    return JsonResponse({"expense_category_data": final_rep}, safe=False)
+
+def stats_view(request):
+    return render(request, "expenses/stats.html")
