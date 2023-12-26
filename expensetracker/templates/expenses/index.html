@@ -28,8 +28,8 @@
     {% if expenses.count %}
     <div class="row col-md-8"></div>
 
-    <div class="row col-md-4">
-
+    <div class="row col-md-2">
+      <a href="{% url "export_csv"%}" class="btn btn-primary" > Export CSV </a> 
       <div class="form-group">
         <input type="text" class="form-control" id="searchField" placeholder="Search By Anything" />
       </div>
