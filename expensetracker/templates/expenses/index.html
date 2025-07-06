@@ -28,7 +28,9 @@
     {% if expenses.count %}
     <div class="row col-md-8"></div>
 
-    <div class="row col-md-2">
+    <div class="row col-md-4">
+      <a href="{% url "export_pdf"%}" class="btn btn-info" > Export PDF </a> 
+
       <a href="{% url "export_excel"%}" class="btn btn-primary" > Export Excel </a> 
       
       <a href="{% url "export_csv"%}" class="btn btn-secondary" > Export CSV </a> 

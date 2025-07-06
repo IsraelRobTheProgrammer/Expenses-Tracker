@@ -136,7 +136,9 @@ class Register_View(View):
                     [user.email],
                 )
                 EmailThread(email).start()
-                messages.success(request, "Please check your email to activate your account")
+                messages.success(
+                    request, "Please check your email to activate your account"
+                )
                 return render(request, "auth/register.html")
 
 
@@ -228,7 +230,7 @@ class RequestResetPswdView(View):
     def post(self, request):
         email = request.POST["email"]
         context = {"email": email, "emailValue": email}
-        print(validate_email(email))
+        print(validate_email(email), "email val")
         if not validate_email(email):
             messages.error(request, "Invalid Email")
             return render(request, "auth/forgot_password.html", context)
@@ -238,40 +240,49 @@ class RequestResetPswdView(View):
         # - join the current relative url to verification view
         #  - encode the uid
         #  - token
-        if User.objects.filter(email=email).exists():
-            user = User.objects.get(username=request.user)
-            print(user)
-            if user:
-                try:
-                    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-                    domain = get_current_site(request).domain
-                    link = reverse(
-                        "reset",
-                        kwargs={
-                            "uidb64": uidb64,
-                            "token": PasswordResetTokenGenerator().make_token(user),
-                        },
-                    )
+        # current_site =  get_current_site(request)
+        # email_body = {
+        #     "user":user,
+        #     "domain":current_site.domain,
+        #     "uid":urlsafe_base64_encode(force_bytes(user.pk)),
+        #     "token": token_generator.make_token(user)
 
-                    reset_url = "http://" + domain + link
-                    email_body = (
-                        "Hi "
-                        + user.username
-                        + " Please use this link to reset your account password\n"
-                        + reset_url
-                    )
-                    email = EmailMessage(
-                        "Password Reset",  # email_subject
-                        email_body,
-                        "noreply@gmail.com",
-                        [user.email],
-                    )
-                    EmailThread(email).start()
-                    messages.success(request, "Reset Email Sent")
-                except Exception as e:
-                    messages.error(request, "Something Went Wrong, Please Try Again")
-                    print(e)
-                    return render(request, "auth/forgot_password.html", context)
+        # }
+        # user = request.objects.filter(email=email)
+        # print(user,"first user")
+        user_query = User.objects.filter(email=email)
+        if user_query.exists():
+            user = user_query[0]
+            try:
+                uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+                domain = get_current_site(request).domain
+                link = reverse(
+                    "reset",
+                    kwargs={
+                        "uidb64": uidb64,
+                        "token": PasswordResetTokenGenerator().make_token(user),
+                    },
+                )
+
+                reset_url = "http://" + domain + link
+                email_body = (
+                    "Hi "
+                    + user.username
+                    + " Please use this link to reset your account password\n"
+                    + reset_url
+                )
+                email = EmailMessage(
+                    "Password Reset",  # email_subject
+                    email_body,
+                    "noreply@gmail.com",
+                    [user.email],
+                )
+                EmailThread(email).start()
+                messages.success(request, "Reset Email Sent")
+            except Exception as e:
+                messages.error(request, "Something Went Wrong, Please Try Again")
+                print(e)
+                return render(request, "auth/forgot_password.html", context)
 
         else:
             messages.error(request, "Email does not exist")
