@@ -1,0 +1,22 @@
+databases:
+  - name: expensetrackerdb
+    plan: free
+    databaseName: expensetracker
+    user: expensetracker
+
+services:
+  - type: web
+    plan: free
+    name: expensetracker
+    runtime: python
+    buildCommand: './build.sh'
+    startCommand: 'python -m gunicorn expensetracker.asgi:application -k uvicorn.workers.UvicornWorker'
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: expensetrackerdb
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
