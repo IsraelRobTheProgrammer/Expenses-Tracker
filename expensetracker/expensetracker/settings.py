@@ -85,27 +85,27 @@ WSGI_APPLICATION = "expensetracker.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     "default": dj_database_url.config(
-#         # Replace this value with your local database's connection string.
-#         default="postgresql://postgres:postgres@localhost:5432/expensetracker",
-#         conn_max_age=600,
-#     )
-# }
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST"),
-        "PORT": env("DB_PORT"),
-        "OPTIONS": {
-            # "sslmode": "require",  # or 'verify-ca', 'verify-full'
-            # "channel_binding":"require"
-        },
-    }
+    "default": dj_database_url.config(
+        # Replace this value with your local database's connection string.
+        default=env("DATABASE_URL"),
+        conn_max_age=600,
+    )
 }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": env("DB_NAME"),
+#         "USER": env("DB_USER"),
+#         "PASSWORD": env("DB_PASSWORD"),
+#         "HOST": env("DB_HOST"),
+#         "PORT": env("DB_PORT"),
+#         "OPTIONS": {
+#             # "sslmode": "require",  # or 'verify-ca', 'verify-full'
+#             # "channel_binding":"require"
+#         },
+#     }
+# }
 
 
 # Password validation
